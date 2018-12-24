@@ -12,8 +12,9 @@ class UpdateDocumentation extends Command
      *
      * @var string
      */
-    protected $signature = 'apidoc:rebuild';
-
+    protected $signature = 'apidoc:rebuild
+                            {--output= : Override the default output directory}
+    ';
     /**
      * The console command description.
      *
@@ -38,7 +39,7 @@ class UpdateDocumentation extends Command
      */
     public function handle()
     {
-        $outputPath = config('apidoc.output');
+        $outputPath = $this->option('output') ?? config('apidoc.output');
 
         $documentarian = new Documentarian();
 

@@ -396,7 +396,7 @@ After editing the markdown file, use the `apidoc:rebuild` command to rebuild you
 $ php artisan apidoc:rebuild
 ```
 
-As an optional parameter, you can use `--location` to tell the update command where your documentation can be found.
+You can optional override the output directory with `--output=path/to/output`. In the case of rebuilding, documentation must already exist at the location.
 
 If you wish to regenerate your documentation, you can run the `generate` command, you can use the `force` option to force the re-generation of existing/modified API routes.
 
