@@ -188,12 +188,20 @@ class UserController extends Controller
 
 ### Specifying request parameters
 
-To specify a list of valid parameters your API route accepts, use the `@bodyParam` and `@queryParam` annotations.
-- The `@bodyParam` annotation takes the name of the parameter, its type, an optional "required" label, and then its description. 
+To specify a list of valid parameters your API route accepts, use the `@urlParam`, `@bodyParam` and/or `@queryParam` annotations.
+- The `@urlParam` and `@bodyParam` annotations take the name of the parameter, its type, an optional "required" label, and then its description. 
 - The `@queryParam` annotation takes the name of the parameter, an optional "required" label, and then its description
 
 
 ```php
+/**
+ * @urlParam id int required The id of the post.
+ */
+public function showPost($id)
+{
+    // ...
+}
+
 /**
  * @bodyParam title string required The title of the post.
  * @bodyParam body string required The title of the post.
@@ -227,6 +235,7 @@ Note: a random value will be used as the value of each parameter in the example 
 
 ```php
     /**
+     * @urlParam id required The id of the post. Example: 2
      * @queryParam location_id required The id of the location.
      * @queryParam user_id required The id of the user. Example: me
      * @queryParam page required The page number. Example: 4
