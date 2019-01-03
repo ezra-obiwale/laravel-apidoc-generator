@@ -126,6 +126,15 @@ class TestController extends Controller
     }
 
     /**
+     * @tags test
+     *
+     * @return void
+     */
+    public function withTags()
+    {
+    }
+
+    /**
      * @response {
      *   "id": 4,
      *   "name": "banana",
