@@ -34,6 +34,15 @@ class TestController extends Controller
     }
 
     /**
+     * @urlParam id int required The id of the user. Example: 9
+     * @urlParam isbn int The isbn of the user's book. Example: 3
+     */
+    public function withUrlParameters()
+    {
+        return '';
+    }
+
+    /**
      * @bodyParam user_id int required The id of the user. Example: 9
      * @bodyParam room_id string The id of the room.
      * @bodyParam forever boolean Whether to ban the user forever. Example: false
