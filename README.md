@@ -41,6 +41,8 @@ $app->configure('apidoc');
 
 ## Usage
 Before you can generate your documentation, you'll need to configure a few things in your `config/apidoc.php`.
+- `url`
+This is the url to show in the request examples. It is also used in the postman collection. Set this with **DOCUMENTATION_URL** in the `.env` file otherwise it defaults to **APP_URL**.
 - `output`
 This is the file path where the generated documentation will be written to. Default: **public/docs**
 
@@ -291,8 +293,8 @@ You can define the transformer that is used for the result of the route using th
 
 1. Check if there is a `@transformerModel` tag to define the model being transformed. If there is none, use the class of the first parameter to the transformer's `transform()` method.
 2. Get an instance of the model from the Eloquent model factory
-2. If the parameter is an Eloquent model, load the first from the database.
-3. Create an instance using `new`.
+3. If the parameter is an Eloquent model, load the first from the database.
+4. Create an instance using `new`.
 
 Finally, it will pass in the model to the transformer and display the result of that as the example response.
 
@@ -426,18 +428,6 @@ php artisan apidoc:generate --only-tags=internal
 The generator automatically creates a Postman collection file, which you can import to use within your [Postman app](https://www.getpostman.com/apps) for even simpler API testing and usage.
 
 If you don't want to create a Postman collection, set the `postman` config option to false.
-
-The default base URL added to the Postman collection will be that found in your Laravel `config/app.php` file. This will likely be `http://localhost`. If you wish to change this setting you can directly update the url or link this config value to your environment file to make it more flexible (as shown below):
-
-```php
-'url' => env('APP_URL', 'http://yourappdefault.app'),
-```
-
-If you are referring to the environment setting as shown above, then you should ensure that you have updated your `.env` file to set the APP_URL value as appropriate. Otherwise the default value (`http://yourappdefault.app`) will be used in your Postman collection. Example environment value:
-
-```
-APP_URL=http://yourapp.app
-```
 
 ## Modifying the generated documentation
 
