@@ -8,9 +8,12 @@ use ReflectionMethod;
 use Illuminate\Routing\Route;
 use Mpociot\Reflection\DocBlock;
 use Mpociot\Reflection\DocBlock\Tag;
+use Mpociot\ApiDoc\Tools\Traits\ParamHelpers;
 
 class Generator
 {
+    use ParamHelpers;
+
     /**
      * @param Route $route
      *
@@ -64,6 +67,7 @@ class Generator
             'methods' => $this->getMethods($route),
             'uri' => $this->getUri($route),
             'bodyParameters' => $bodyParameters,
+            'cleanBodyParameters' => $this->cleanParams($bodyParameters),
             'queryParameters' => $queryParameters,
             'urlParameters' => $urlParameters,
             'authenticated' => $this->getAuthStatusFromDocBlock($docBlock['tags']),
