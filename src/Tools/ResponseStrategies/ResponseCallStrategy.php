@@ -63,7 +63,7 @@ class ResponseCallStrategy
         if (count($urlParams)) {
             $bindings = [];
             foreach ($urlParams as $key => $description) {
-                $bindings[$key] = $description['value'];
+                $bindings['{' . $key . '}'] = $description['value'];
             }
             return $bindings;
         }
