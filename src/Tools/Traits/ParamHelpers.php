@@ -13,8 +13,8 @@ trait ParamHelpers {
     protected function cleanParams(array $params)
     {
         $values = [];
-        foreach ($params as $name => $description) {
-            $this->cleanValueFrom($name, $description['value'], $values);
+        foreach ($params as $name => $details) {
+            $this->cleanValueFrom($name, $details['value'], $values);
         }
         return $values;
     }
