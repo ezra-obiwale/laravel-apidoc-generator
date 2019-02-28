@@ -24,7 +24,7 @@ $ composer require mpociot/laravel-apidoc-generator
 Publish the config file by running:
 
 ```bash
-php artisan vendor:publish --provider="Mpociot\ApiDoc\ApiDocGeneratorServiceProvider" --tag=config
+php artisan vendor:publish --provider="Mpociot\ApiDoc\ApiDocGeneratorServiceProvider" --tag=apidoc-config
 ```
 This will create an `apidoc.php` file in your `config` folder.
 
@@ -45,7 +45,7 @@ Before you can generate your documentation, you'll need to configure a few thing
 This is the file path where the generated documentation will be written to. Default: **public/docs**
 
 - `postman`
-Set this option to true if you want a Postman collection to be generated along with the documentation. Default: **true**
+This package can automatically generate a Postman collection for your routes, along with the documentation. This section is where you can configure (or disable) that.
 
 - `router`
 The router to use when processing the route (can be Laravel or Dingo. Defaults to **Laravel**)
@@ -236,6 +236,27 @@ Note: a random value will be used as the value of each parameter in the example 
      */
 ```
 
+Note: You can also add the `@bodyParam` annotations to a `\Illuminate\Foundation\Http\FormRequest` subclass:
+
+```php
+/**
+ * @bodyParam title string required The title of the post.
+ * @bodyParam body string required The title of the post.
+ * @bodyParam type string The type of post to create. Defaults to 'textophonious'.
+ * @bodyParam author_id int the ID of the author
+ * @bodyParam thumbnail image This is required if the post type is 'imagelicious'.
+ */
+class MyRequest extends \Illuminate\Foundation\Http\FormRequest
+{
+
+}
+
+public function createPost(MyRequest $request)
+{
+    // ...
+}
+```
+
 ### Indicating auth status
 You can use the `@authenticated` annotation on a method to indicate if the endpoint is authenticated. A "Requires authentication" badge will be added to that route in the generated documentation.
 
@@ -291,7 +312,7 @@ For example:
 
 ```php
 /**
- * @transformer \App\Transformers\UserTransformer
+ * @transformercollection \App\Transformers\UserTransformer
  * @transformerModel \App\User
  */
 public function listUsers()

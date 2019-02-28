@@ -40,8 +40,27 @@ class TestController extends Controller
      * @bodyParam another_one number Just need something here.
      * @bodyParam yet_another_param object required
      * @bodyParam even_more_param array
+     * @bodyParam book.name string
+     * @bodyParam book.author_id integer
+     * @bodyParam book[pages_count] integer
+     * @bodyParam ids.* integer
+     * @bodyParam users.*.first_name string The first name of the user. Example: John
+     * @bodyParam users.*.last_name string The last name of the user. Example: Doe
      */
     public function withBodyParameters()
+    {
+        return '';
+    }
+
+    public function withFormRequestParameter(TestRequest $request)
+    {
+        return '';
+    }
+
+    /**
+     * @bodyParam direct_one string Is found directly on the method.
+     */
+    public function withNonCommentedFormRequestParameter(TestNonCommentedRequest $request)
     {
         return '';
     }

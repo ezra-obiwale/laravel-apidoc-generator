@@ -84,6 +84,62 @@ abstract class GeneratorTestCase extends TestCase
     }
 
     /** @test */
+    public function it_ignores_non_commented_form_request()
+    {
+        $route = $this->createRoute('GET', '/api/test', 'withNonCommentedFormRequestParameter');
+        $bodyParameters = $this->generator->processRoute($route)['bodyParameters'];
+
+        $this->assertArraySubset([
+            'direct_one' => [
+                'type' => 'string',
+                'description' => 'Is found directly on the method.',
+            ],
+        ], $bodyParameters);
+    }
+
+    /** @test */
+    public function can_parse_form_request_body_parameters()
+    {
+        $route = $this->createRoute('GET', '/api/test', 'withFormRequestParameter');
+        $bodyParameters = $this->generator->processRoute($route)['bodyParameters'];
+
+        $this->assertArraySubset([
+            'user_id' => [
+                'type' => 'integer',
+                'required' => true,
+                'description' => 'The id of the user.',
+                'value' => 9,
+            ],
+            'room_id' => [
+                'type' => 'string',
+                'required' => false,
+                'description' => 'The id of the room.',
+            ],
+            'forever' => [
+                'type' => 'boolean',
+                'required' => false,
+                'description' => 'Whether to ban the user forever.',
+                'value' => false,
+            ],
+            'another_one' => [
+                'type' => 'number',
+                'required' => false,
+                'description' => 'Just need something here.',
+            ],
+            'yet_another_param' => [
+                'type' => 'object',
+                'required' => true,
+                'description' => '',
+            ],
+            'even_more_param' => [
+                'type' => 'array',
+                'required' => false,
+                'description' => '',
+            ],
+        ], $bodyParameters);
+    }
+
+    /** @test */
     public function can_parse_query_parameters()
     {
         $route = $this->createRoute('GET', '/api/test', 'withQueryParameters');
@@ -224,9 +280,16 @@ abstract class GeneratorTestCase extends TestCase
         ], json_decode($parsed['response'][1]['content'], true));
     }
 
-    /** @test */
-    public function can_parse_transformer_tag()
+    /**
+     * @param $serializer
+     * @param $expected
+     *
+     * @test
+     * @dataProvider dataResources
+     */
+    public function can_parse_transformer_tag($serializer, $expected)
     {
+        config(['apidoc.fractal.serializer' => $serializer]);
         $route = $this->createRoute('GET', '/transformerTag', 'transformerTag');
         $parsed = $this->generator->processRoute($route);
         $response = array_first($parsed['response']);
@@ -238,8 +301,22 @@ abstract class GeneratorTestCase extends TestCase
         $this->assertEquals(200, $response['status']);
         $this->assertSame(
             $response['content'],
-            '{"data":{"id":1,"description":"Welcome on this test versions","name":"TestName"}}'
+            $expected
         );
+    }
+
+    public function dataResources()
+    {
+        return [
+            [
+                null,
+                '{"data":{"id":1,"description":"Welcome on this test versions","name":"TestName"}}',
+            ],
+            [
+                'League\Fractal\Serializer\JsonApiSerializer',
+                '{"data":{"type":null,"id":"1","attributes":{"description":"Welcome on this test versions","name":"TestName"}}}',
+            ],
+        ];
     }
 
     /** @test */

@@ -8,6 +8,7 @@ use Illuminate\Routing\Route;
 use Illuminate\Console\Command;
 use Mpociot\Reflection\DocBlock;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\URL;
 use Mpociot\ApiDoc\Tools\Generator;
 use Mpociot\ApiDoc\Tools\RouteMatcher;
 use Mpociot\Documentarian\Documentarian;
@@ -46,6 +47,7 @@ class GenerateDocumentation extends Command
      */
     public function handle()
     {
+        URL::forceRootUrl(config('app.url'));
         $usingDingoRouter = strtolower(config('apidoc.router')) == 'dingo';
         if ($usingDingoRouter) {
             $routes = $this->routeMatcher->getDingoRoutesToBeDocumented(config('apidoc.routes'));
@@ -79,10 +81,13 @@ class GenerateDocumentation extends Command
 
         $infoText = view('apidoc::partials.info')
             ->with('outputPath', ltrim($outputPath, 'public/'))
-            ->with('showPostmanCollectionButton', config('apidoc.postman'));
+            ->with('showPostmanCollectionButton', $this->shouldGeneratePostmanCollection());
 
         $parsedRouteOutput = $parsedRoutes->map(function ($routeGroup) {
             return $routeGroup->map(function ($route) {
+                if (count($route['cleanBodyParameters'])) {
+                    $route['headers']['Content-Type'] = 'application/json';
+                }
                 $route['output'] = (string) view('apidoc::partials.route')->with('route', $route)->render();
 
                 return $route;
@@ -135,7 +140,7 @@ class GenerateDocumentation extends Command
             ->with('prependMd', $prependFileContents)
             ->with('appendMd', $appendFileContents)
             ->with('outputPath', config('apidoc.output'))
-            ->with('showPostmanCollectionButton', config('apidoc.postman'))
+            ->with('showPostmanCollectionButton', $this->shouldGeneratePostmanCollection())
             ->with('parsedRoutes', $parsedRouteOutput);
 
         if (! is_dir($outputPath)) {
@@ -153,7 +158,7 @@ class GenerateDocumentation extends Command
             ->with('prependMd', $prependFileContents)
             ->with('appendMd', $appendFileContents)
             ->with('outputPath', config('apidoc.output'))
-            ->with('showPostmanCollectionButton', config('apidoc.postman'))
+            ->with('showPostmanCollectionButton', $this->shouldGeneratePostmanCollection())
             ->with('parsedRoutes', $parsedRouteOutput);
 
         file_put_contents($compareFile, $compareMarkdown);
@@ -166,7 +171,7 @@ class GenerateDocumentation extends Command
 
         $this->info('Wrote HTML documentation to: '.$outputPath.'/index.html');
 
-        if (config('apidoc.postman')) {
+        if ($this->shouldGeneratePostmanCollection()) {
             $this->info('Generating Postman collection');
 
             file_put_contents($outputPath.DIRECTORY_SEPARATOR.'collection.json', $this->generatePostmanCollection($parsedRoutes));
@@ -256,5 +261,15 @@ class GenerateDocumentation extends Command
         $writer = new CollectionWriter($routes);
 
         return $writer->getCollection();
+    }
+
+    /**
+     * Checks config if it should generate Postman collection.
+     *
+     * @return bool
+     */
+    private function shouldGeneratePostmanCollection()
+    {
+        return config('apidoc.postman.enabled', is_bool(config('apidoc.postman')) ? config('apidoc.postman') : false);
     }
 }
