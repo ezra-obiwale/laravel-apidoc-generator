@@ -387,6 +387,58 @@ If you don't specify an example response using any of the above means, this pack
 - You can configure environment variables (this is useful so you can prevent external services like notifications from being triggered). By default the APP_ENV is set to 'documentation'. You can add more variables in the `env` key.
 - By default, the package will generate dummy values for your documented body and query parameters and send in the request. (If you specified example values using `@bodyParam` or `@queryParam`, those will be used instead.) You can configure what headers and additional query and parameters should be sent when making the request (the `headers`, `query`, and `body` keys respectively).
 
+### Class Inheritance and Method Overriding
+
+In the situation where a superclass contains all the route methods and a subclass
+needs to customize the documentation, each method could be overriden and the docs
+provided in the annotations like:
+
+```php
+/**
+ * Books List
+ * 
+ * Fetch a listing of books
+ * 
+ * @responseFile path/to/index/response/file
+ */
+public function index()
+{
+    return parent::index();
+}
+```
+
+**OR**
+
+the method docs could be added to the class annotations like:
+
+```php
+/**
+ * Book Resource
+ * 
+ * The long description of the book resource
+ * 
+ * @group Books
+ * 
+ * @indexTitle Books List
+ * @indexDescription Fetch a listing of books
+ * @indexResponseFile path/to/index/response/file
+ * 
+ * @storeTitle Create Book
+ * @storeDescription Create a new book
+ * @storeBodyParam title string required The title of the book
+ * @storeResponseFile path/to/store/response/file
+ * 
+ * ...
+ */
+class BookController extends CoolSuperController
+{
+
+}
+```
+
+**Caveat**
+
+- Multi-line isn't possible
 
 ### Postman collections
 
