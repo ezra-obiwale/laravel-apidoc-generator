@@ -9,6 +9,7 @@ use Illuminate\Routing\Route;
 use Mpociot\Reflection\DocBlock;
 use Mpociot\Reflection\DocBlock\Tag;
 use Mpociot\ApiDoc\Tools\Traits\ParamHelpers;
+use Illuminate\Support\Str;
 
 class Generator
 {
@@ -48,7 +49,7 @@ class Generator
         $method = $controller->getMethod($method);
 
         $routeGroup = $this->getRouteGroup($controller, $method);
-        $docBlock = $this->parseDocBlock($method);
+        $docBlock = $this->getMethodDocs($controller, $method);
         $bodyParameters = $this->getBodyParameters($method, $docBlock['tags']);
         $queryParameters = $this->getQueryParametersFromDocBlock($docBlock['tags']);
         $content = ResponseResolver::getResponse($route, $docBlock['tags'], [
@@ -242,6 +243,36 @@ class Generator
         }
 
         return 'general';
+    }
+
+    protected function getMethodDocs(ReflectionClass $controller, ReflectionMethod $method)
+    {
+        $classDoc = new DocBlock($controller->getDocComment());
+        $methodName = $method->getName();
+
+        $methodDocs = [];
+        foreach ($classDoc->getTags() as $tag) {
+            if (Str::startsWith($tag->getName(), $methodName)) {
+                $name = lcfirst(Str::after($tag->getName(), $methodName));
+
+                switch($name) {
+                    case 'title':
+                        $methodDocs['short'] = ltrim(Str::after($tag->getContent(), 'title'));
+                        break;
+                    case 'description':
+                        $methodDocs['long'] = ltrim(Str::after($tag->getContent(), 'description'));
+                        break;
+                    default:
+                        $methodDocs['tags'][] = $tag->setName($name);
+                }
+            }
+        }
+
+        return array_merge(
+            $this->parseDocBlock($method),
+            $methodDocs
+        );
+
     }
 
     private function normalizeParameterType($type)
