@@ -12,7 +12,7 @@
 > Example request:
 
 ```bash
-curl -X {{$route['methods'][0]}} {{$route['methods'][0] == 'GET' ? '-G ' : ''}}"{{ trim(config('app.docs_url') ?: config('app.url'), '/')}}/{{ ltrim($route['uri'], '/') }}" @if(count($route['headers']))\
+curl -X {{$route['methods'][0]}} {{$route['methods'][0] == 'GET' ? '-G ' : ''}}"{{ trim(config('apidoc.url') ?? config('app.docs_url') ?? config('app.url'), '/')}}/{{ ltrim($route['uri'], '/') }}" @if(count($route['headers']))\
 @foreach($route['headers'] as $header => $value)
     -H "{{$header}}: {{$value}}"@if(! ($loop->last) || ($loop->last && count($route['bodyParameters']))) \
 @endif
@@ -25,7 +25,7 @@ curl -X {{$route['methods'][0]}} {{$route['methods'][0] == 'GET' ? '-G ' : ''}}"
 ```
 
 ```javascript
-const url = new URL("{{ rtrim(config('app.docs_url') ?: config('app.url'), '/') }}/{{ ltrim($route['uri'], '/') }}");
+const url = new URL("{{ rtrim(config('apidoc.url') ?? config('app.docs_url') ?? config('app.url'), '/') }}/{{ ltrim($route['uri'], '/') }}");
 @if(count($route['queryParameters']))
 
     let params = {
@@ -94,6 +94,15 @@ fetch(url, {
 `{{$method}} {{$route['uri']}}`
 
 @endforeach
+@if(count($route['urlParameters']))
+#### Url Parameters
+
+Parameter | Type | Status | Description
+--------- | ------- | ------- | ------- | -----------
+@foreach($route['urlParameters'] as $attribute => $parameter)
+    {{$attribute}} | {{$parameter['type']}} | @if($parameter['required']) required @else optional @endif | {!! $parameter['description'] !!}
+@endforeach
+@endif
 @if(count($route['bodyParameters']))
 #### Body Parameters
 

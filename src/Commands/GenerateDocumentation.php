@@ -23,6 +23,9 @@ class GenerateDocumentation extends Command
      */
     protected $signature = 'apidoc:generate
                             {--force : Force rewriting of existing routes}
+                            {--output= : Override the default output directory}
+                            {--only-tags= : Comma-separated list of tags to generate}
+                            {--skip-tags= : Comma-separated list of tags to skip}
     ';
 
     /**
@@ -73,7 +76,7 @@ class GenerateDocumentation extends Command
      */
     private function writeMarkdown($parsedRoutes)
     {
-        $outputPath = config('apidoc.output');
+        $outputPath = $this->option('output') ?? config('apidoc.output');
         $targetFile = $outputPath.DIRECTORY_SEPARATOR.'source'.DIRECTORY_SEPARATOR.'index.md';
         $compareFile = $outputPath.DIRECTORY_SEPARATOR.'source'.DIRECTORY_SEPARATOR.'.compare.md';
         $prependFile = $outputPath.DIRECTORY_SEPARATOR.'source'.DIRECTORY_SEPARATOR.'prepend.md';
@@ -197,7 +200,7 @@ class GenerateDocumentation extends Command
         foreach ($routes as $routeItem) {
             $route = $routeItem['route'];
             /** @var Route $route */
-            if ($this->isValidRoute($route) && $this->isRouteVisibleForDocumentation($route->getAction()['uses'])) {
+            if ($this->isValidRoute($route) && $this->isRouteVisibleForDocumentation($route)) {
                 $parsedRoutes[] = $generator->processRoute($route, $routeItem['apply']);
                 $this->info('Processed route: ['.implode(',', $generator->getMethods($route)).'] '.$generator->getUri($route));
             } else {
@@ -227,7 +230,7 @@ class GenerateDocumentation extends Command
      */
     private function isRouteVisibleForDocumentation($route)
     {
-        list($class, $method) = explode('@', $route);
+        list($class, $method) = explode('@', $route->getAction()['uses']);
         $reflection = new ReflectionClass($class);
 
         if (! $reflection->hasMethod($method)) {
@@ -236,17 +239,55 @@ class GenerateDocumentation extends Command
 
         $comment = $reflection->getMethod($method)->getDocComment();
 
+        $allowedTags = str_replace(',,', ',', $this->option('only-tags'));
+        $disallowedTags = str_replace(',,', ',', $this->option('skip-tags'));
+
+        $allowedTags = trim($allowedTags) ? explode(',', $allowedTags) : [];
+        $disallowedTags = trim($disallowedTags) ? explode(',', $disallowedTags) : [];
+
+        $routeTags = $route->getAction('tags');
+
+        if ($routeTags) {
+            if (! is_array($routeTags)) {
+                $routeTags = [$routeTags];
+            }
+            if (! $this->skipRouteWithTags($routeTags, $allowedTags, $disallowedTags)) {
+                return true;
+            }
+        }
+
         if ($comment) {
             $phpdoc = new DocBlock($comment);
 
+            if (count($allowedTags) && ! $phpdoc->hasTag('tags')) {
+                return false;
+            }
+
             return collect($phpdoc->getTags())
-                ->filter(function ($tag) use ($route) {
+                ->filter(function ($tag) use ($allowedTags, $disallowedTags) {
+                    if ((count($allowedTags) || count($disallowedTags)) &&
+                        $tag->getName() == 'tags') {
+                        $tags = explode(' ', $tag->getContent());
+
+                        return $this->skipRouteWithTags($tags, $allowedTags, $disallowedTags);
+                    }
+
                     return $tag->getName() === 'hideFromAPIDocumentation';
                 })
                 ->isEmpty();
+        } elseif (count($allowedTags)) {
+            return false;
         }
 
         return true;
+    }
+
+    private function skipRouteWithTags(array $tags, array $allowedTags, array $disallowedTags)
+    {
+        $containedAllowedTags = array_intersect($tags, $allowedTags);
+        $containedDisallowedTags = array_intersect($tags, $disallowedTags);
+
+        return ! count($containedAllowedTags) || count($containedDisallowedTags);
     }
 
     /**

@@ -52,10 +52,12 @@ class Generator
         $docBlock = $this->getMethodDocs($controller, $method);
         $bodyParameters = $this->getBodyParameters($method, $docBlock['tags']);
         $queryParameters = $this->getQueryParametersFromDocBlock($docBlock['tags']);
+        $urlParameters = $this->getUrlParametersFromDocBlock($docBlock['tags']);
         $content = ResponseResolver::getResponse($route, $docBlock['tags'], [
             'rules' => $rulesToApply,
             'body' => $bodyParameters,
             'query' => $queryParameters,
+            'url' => $urlParameters,
         ]);
 
         $parsedRoute = [
@@ -68,6 +70,7 @@ class Generator
             'bodyParameters' => $bodyParameters,
             'cleanBodyParameters' => $this->cleanParams($bodyParameters),
             'queryParameters' => $queryParameters,
+            'urlParameters' => $urlParameters,
             'authenticated' => $this->getAuthStatusFromDocBlock($docBlock['tags']),
             'response' => $content,
             'showresponse' => ! empty($content),
@@ -176,6 +179,44 @@ class Generator
                 }
 
                 return [$name => compact('description', 'required', 'value')];
+            })->toArray();
+
+        return $parameters;
+    }
+
+    /**
+     * @param array $tags
+     *
+     * @return array
+     */
+    protected function getUrlParametersFromDocBlock(array $tags)
+    {
+        $parameters = collect($tags)
+            ->filter(function ($tag) {
+                return $tag instanceof Tag && $tag->getName() === 'urlParam';
+            })
+            ->mapWithKeys(function ($tag) {
+                preg_match('/(.+?)\s+(.+?)\s+(required\s+)?(.*)/', $tag->getContent(), $content);
+                if (empty($content)) {
+                    // this means only name and type were supplied
+                    list($name, $type) = preg_split('/\s+/', $tag->getContent());
+                    $required = false;
+                    $description = '';
+                } else {
+                    list($_, $name, $type, $required, $description) = $content;
+                    $description = trim($description);
+                    if ($description == 'required' && empty(trim($required))) {
+                        $required = $description;
+                        $description = '';
+                    }
+                    $required = trim($required) == 'required' ? true : false;
+                }
+
+                $type = $this->normalizeParameterType($type);
+                list($description, $example) = $this->parseDescription($description, $type);
+                $value = is_null($example) ? $this->generateDummyValue($type) : $example;
+
+                return [$name => compact('type', 'description', 'required', 'value')];
             })->toArray();
 
         return $parameters;

@@ -30,7 +30,7 @@ class ResponseCallStrategy
         }
 
         $this->configureEnvironment($rulesToApply);
-        $request = $this->prepareRequest($route, $rulesToApply, $routeProps['body'], $routeProps['query']);
+        $request = $this->prepareRequest($route, $rulesToApply, $routeProps['body'], $routeProps['query'], $routeProps['url']);
 
         try {
             $response = [$this->makeApiCall($request)];
@@ -55,6 +55,21 @@ class ResponseCallStrategy
     }
 
     /**
+     * @param array $urlParams
+     * @return mixed
+     */
+    private function getCustomUrlBindings(array $urlParams)
+    {
+        if (count($urlParams)) {
+            $bindings = [];
+            foreach ($urlParams as $key => $description) {
+                $bindings['{' . $key . '}'] = $description['value'];
+            }
+            return $bindings;
+        }
+    }
+
+    /**
      * @param Route $route
      * @param array $rulesToApply
      * @param array $bodyParams
@@ -62,9 +77,10 @@ class ResponseCallStrategy
      *
      * @return Request
      */
-    private function prepareRequest(Route $route, array $rulesToApply, array $bodyParams, array $queryParams)
+    private function prepareRequest(Route $route, array $rulesToApply, array $bodyParams, array $queryParams, array $urlParams)
     {
-        $uri = $this->replaceUrlParameterBindings($route, $rulesToApply['bindings'] ?? []);
+        $customBindings = $this->getCustomUrlBindings($urlParams);
+        $uri = $this->replaceUrlParameterBindings($route, $customBindings ?? $rulesToApply['bindings'] ?? []);
         $routeMethods = $this->getMethods($route);
         $method = array_shift($routeMethods);
         $request = Request::create($uri, $method, [], [], [], $this->transformHeadersToServerVars($rulesToApply['headers'] ?? []));

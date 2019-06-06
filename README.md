@@ -41,6 +41,8 @@ $app->configure('apidoc');
 
 ## Usage
 Before you can generate your documentation, you'll need to configure a few things in your `config/apidoc.php`.
+- `url`
+This is the url to show in the request examples. It is also used in the postman collection. Set this with **DOCUMENTATION_URL** in the `.env` file otherwise it defaults to **APP_URL**.
 - `output`
 This is the file path where the generated documentation will be written to. Default: **public/docs**
 
@@ -188,12 +190,20 @@ class UserController extends Controller
 
 ### Specifying request parameters
 
-To specify a list of valid parameters your API route accepts, use the `@bodyParam` and `@queryParam` annotations.
-- The `@bodyParam` annotation takes the name of the parameter, its type, an optional "required" label, and then its description. 
+To specify a list of valid parameters your API route accepts, use the `@urlParam`, `@bodyParam` and/or `@queryParam` annotations.
+- The `@urlParam` and `@bodyParam` annotations take the name of the parameter, its type, an optional "required" label, and then its description. 
 - The `@queryParam` annotation takes the name of the parameter, an optional "required" label, and then its description
 
 
 ```php
+/**
+ * @urlParam id int required The id of the post.
+ */
+public function showPost($id)
+{
+    // ...
+}
+
 /**
  * @bodyParam title string required The title of the post.
  * @bodyParam body string required The title of the post.
@@ -227,6 +237,7 @@ Note: a random value will be used as the value of each parameter in the example 
 
 ```php
     /**
+     * @urlParam id required The id of the post. Example: 2
      * @queryParam location_id required The id of the location.
      * @queryParam user_id required The id of the user. Example: me
      * @queryParam page required The page number. Example: 4
@@ -303,8 +314,8 @@ You can define the transformer that is used for the result of the route using th
 
 1. Check if there is a `@transformerModel` tag to define the model being transformed. If there is none, use the class of the first parameter to the transformer's `transform()` method.
 2. Get an instance of the model from the Eloquent model factory
-2. If the parameter is an Eloquent model, load the first from the database.
-3. Create an instance using `new`.
+3. If the parameter is an Eloquent model, load the first from the database.
+4. Create an instance using `new`.
 
 Finally, it will pass in the model to the transformer and display the result of that as the example response.
 
@@ -439,24 +450,57 @@ class BookController extends CoolSuperController
 **Caveat**
 
 - Multi-line isn't possible
+### Generating based on tags
+
+Sometimes, you may want only a set of endpoints documented, for example, if some endpoints are for internal usage only. Introducing `tags`:
+
+#### Route group tags
+
+Routes may be grouped together and tagged:
+
+```php
+Route::group(['tags' => ['internal']], function () {
+    Route::resource('/books', 'BooksController')
+});
+```
+
+#### Annotation tags
+
+While `@hideFromAPIDocumentation` hides all so-tagged methods from the documentation, `@tags` allows for a more fine-tuned documentation of methods.
+
+
+```php
+/**
+ * @tags internal
+ */
+public function index()
+{
+    # code...
+}
+```
+
+#### Using tags with command
+
+With either or both of the above tagging methods, you can go ahead to skip **internal** endpoints by using the `--skip-tags` option:
+
+```php
+php artisan apidoc:generate --skip-tags=internal
+```
+
+And if you want to generate only **internal** endpoints, use the `--only-tags` options:
+
+```php
+php artisan apidoc:generate --only-tags=internal
+```
+
+>**Note:**  Route groups and methods may have multiple tags e.g. `@tags internal important`
+>**Note:** `--skip-tags` and `--only-tags` may target multiple tags e.g. `php artisan apidoc:generate --skip-tags=internal,important
 
 ### Postman collections
 
 The generator automatically creates a Postman collection file, which you can import to use within your [Postman app](https://www.getpostman.com/apps) for even simpler API testing and usage.
 
 If you don't want to create a Postman collection, set the `postman` config option to false.
-
-The default base URL added to the Postman collection will be that found in your Laravel `config/app.php` file. This will likely be `http://localhost`. If you wish to change this setting you can directly update the url or link this config value to your environment file to make it more flexible (as shown below):
-
-```php
-'url' => env('APP_URL', 'http://yourappdefault.app'),
-```
-
-If you are referring to the environment setting as shown above, then you should ensure that you have updated your `.env` file to set the APP_URL value as appropriate. Otherwise the default value (`http://yourappdefault.app`) will be used in your Postman collection. Example environment value:
-
-```
-APP_URL=http://yourapp.app
-```
 
 ## Modifying the generated documentation
 
@@ -469,7 +513,7 @@ After editing the markdown file, use the `apidoc:rebuild` command to rebuild you
 $ php artisan apidoc:rebuild
 ```
 
-As an optional parameter, you can use `--location` to tell the update command where your documentation can be found.
+You can optional override the output directory with `--output=path/to/output`. In the case of rebuilding, documentation must already exist at the location.
 
 If you wish to regenerate your documentation, you can run the `generate` command, you can use the `force` option to force the re-generation of existing/modified API routes.
 

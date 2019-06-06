@@ -2,6 +2,11 @@
 
 return [
 
+    /**
+     * The url to display in the example requests.
+     */
+    'url' => env('DOCUMENTATION_URL', env('APP_URL')),
+
     /*
      * The output path for the generated documentation.
      */

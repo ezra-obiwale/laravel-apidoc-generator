@@ -45,7 +45,7 @@ class CollectionWriter
                         return [
                             'name' => $route['title'] != '' ? $route['title'] : url($route['uri']),
                             'request' => [
-                                'url' => url($route['uri']),
+                                'url' => $this->url($route['uri']),
                                 'method' => $route['methods'][0],
                                 'body' => [
                                     'mode' => $mode,
@@ -68,5 +68,17 @@ class CollectionWriter
         ];
 
         return json_encode($collection);
+    }
+
+    private function url($uri)
+    {
+        $baseUrl = config('apidoc.url');
+        if (!ends_with($baseUrl, '/')) {
+            $baseUrl .= '/';
+        }
+        if (starts_with($uri, '/')) {
+            $uri = substr($uri, 1);
+        }
+        return $baseUrl . $uri;
     }
 }
