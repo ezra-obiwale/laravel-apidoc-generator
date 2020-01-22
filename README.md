@@ -11,36 +11,44 @@ Automatically generate your API documentation from your existing Laravel/Lumen/[
 [![Build Status](https://travis-ci.org/mpociot/laravel-apidoc-generator.svg?branch=master)](https://travis-ci.org/mpociot/laravel-apidoc-generator)
 [![StyleCI](https://styleci.io/repos/57999295/shield?style=flat)](https://styleci.io/repos/57999295)
 
-> Note: this is the documentation for version 3, which changes significantly from version 2. if you're on v2, you can check out its documentation [here](https://github.com/mpociot/laravel-apidoc-generator/blob/2.x/README.md). We strongly recommend you upgrade, though, as v3 is more robust and fixes a lot of the problems with v2.
+> Note: this is the documentation for version 3, which changes significantly from version 2. if you're on v2, you can check out its documentation [here](https://github.com/d-scribe/laravel-apidoc-generator/blob/2.x/README.md). We strongly recommend you upgrade, though, as v3 is more robust and fixes a lot of the problems with v2.
 
 ## Installation
+
 > Note: PHP 7 and Laravel 5.5 or higher are required.
 
 ```sh
-$ composer require mpociot/laravel-apidoc-generator
+composer require d-scribe/laravel-apidoc-generator
 ```
 
 ### Laravel
+
 Publish the config file by running:
 
 ```bash
 php artisan vendor:publish --provider="Mpociot\ApiDoc\ApiDocGeneratorServiceProvider" --tag=apidoc-config
 ```
+
 This will create an `apidoc.php` file in your `config` folder.
 
 ### Lumen
+
 - Register the service provider in your `bootstrap/app.php`:
+
 ```php
 $app->register(\Mpociot\ApiDoc\ApiDocGeneratorServiceProvider::class);
 ```
-- Copy the config file from `vendor/mpociot/laravel-apidoc-generator/config/apidoc.php` to your project as `config/apidoc.php`. Then add to your `bootstrap/app.php`:
+
+- Copy the config file from `vendor/d-scribe/laravel-apidoc-generator/config/apidoc.php` to your project as `config/apidoc.php`. Then add to your `bootstrap/app.php`:
+
 ```php
 $app->configure('apidoc');
 ```
 
-
 ## Usage
+
 Before you can generate your documentation, you'll need to configure a few things in your `config/apidoc.php`.
+
 - `url`
 This is the url to show in the request examples. It is also used in the postman collection. Set this with **DOCUMENTATION_URL** in the `.env` file otherwise it defaults to **APP_URL**.
 - `output`
@@ -63,7 +71,7 @@ For instance, suppose your configuration looks like this:
 ```php
 return [
      //...,
-  
+
      'routes' => [
           [
               'match' => [
@@ -91,7 +99,7 @@ You can also separate routes into groups to apply different rules to them:
 <?php
 return [
      //...,
-  
+
      'routes' => [
           [
               'match' => [
@@ -132,7 +140,7 @@ With the configuration above, routes on the `v1.*` domain will have the `Token` 
 To generate your API documentation, use the `apidoc:generate` artisan command.
 
 ```sh
-$ php artisan apidoc:generate
+php artisan apidoc:generate
 
 ```
 
@@ -162,38 +170,38 @@ You can also specify an `@group` on a single method to override the group define
 class UserController extends Controller
 {
 
-	/**
-	 * Create a user
-	 *
-	 * [Insert optional longer description of the API endpoint here.]
-	 *
-	 */
-	 public function createUser()
-	 {
+ /**
+  * Create a user
+  *
+  * [Insert optional longer description of the API endpoint here.]
+  *
+  */
+  public function createUser()
+  {
 
-	 }
-	 
-	/**
-	 * @group Account management
-	 *
-	 */
-	 public function changePassword()
-	 {
+  }
 
-	 }
+ /**
+  * @group Account management
+  *
+  */
+  public function changePassword()
+  {
+
+  }
 }
 ```
 
-**Result:** 
+**Result:**
 
 ![Doc block result](http://headsquaredsoftware.co.uk/images/api_generator_docblock.png)
 
 ### Specifying request parameters
 
 To specify a list of valid parameters your API route accepts, use the `@urlParam`, `@bodyParam` and/or `@queryParam` annotations.
-- The `@urlParam` and `@bodyParam` annotations take the name of the parameter, its type, an optional "required" label, and then its description. 
-- The `@queryParam` annotation takes the name of the parameter, an optional "required" label, and then its description
 
+- The `@urlParam` and `@bodyParam` annotations take the name of the parameter, its type, an optional "required" label, and then its description.
+- The `@queryParam` annotation takes the name of the parameter, an optional "required" label, and then its description
 
 ```php
 /**
@@ -269,12 +277,15 @@ public function createPost(MyRequest $request)
 ```
 
 ### Indicating auth status
+
 You can use the `@authenticated` annotation on a method to indicate if the endpoint is authenticated. A "Requires authentication" badge will be added to that route in the generated documentation.
 
 ### Providing an example response
+
 You can provide an example response for a route. This will be displayed in the examples section. There are several ways of doing this.
 
 #### @response
+
 You can provide an example response for a route by using the `@response` annotation with valid JSON:
 
 ```php
@@ -292,6 +303,7 @@ public function show($id)
 ```
 
 Moreover, you can define multiple `@response` tags as well as the HTTP status code related to a particular response (if no status code set, `200` will be returned):
+
 ```php
 /**
  * @response {
@@ -310,6 +322,7 @@ public function show($id)
 ```
 
 #### @transformer, @transformerCollection, and @transformerModel
+
 You can define the transformer that is used for the result of the route using the `@transformer` tag (or `@transformerCollection` if the route returns a list). The package will attempt to generate an instance of the model to be transformed using the following steps, stopping at the first successful one:
 
 1. Check if there is a `@transformerModel` tag to define the model being transformed. If there is none, use the class of the first parameter to the transformer's `transform()` method.
@@ -348,6 +361,7 @@ public function showUser(int $id)
     // ...
 }
 ```
+
 For the first route above, this package will generate a set of two users then pass it through the transformer. For the last two, it will generate a single user and then pass it through the transformer.
 
 > Note: for transformer support, you need to install the league/fractal package
@@ -375,9 +389,11 @@ public function getUser(int $id)
   // ...
 }
 ```
+
 The package will parse this response and display in the examples for this route.
 
 Similarly to `@response` tag, you can provide multiple `@responseFile` tags along with the HTTP status code of the response:
+
 ```php
 /**
  * @responseFile responses/users.get.json
@@ -390,7 +406,9 @@ public function getUser(int $id)
 ```
 
 #### Generating responses automatically
+
 If you don't specify an example response using any of the above means, this package will attempt to get a sample response by making a request to the route (a "response call"). A few things to note about response calls:
+
 - They are done within a database transaction and changes are rolled back afterwards.
 - The configuration for response calls is located in the `config/apidoc.php`. They are configured within the `['apply']['response_calls']` section for each route group, allowing you to apply different settings for different sets of routes.
 - By default, response calls are only made for GET routes, but you can configure this. Set the `methods` key to an array of methods or '*' to mean all methods. Leave it as an empty array to turn off response calls for that route group.
@@ -407,9 +425,9 @@ provided in the annotations like:
 ```php
 /**
  * Books List
- * 
+ *
  * Fetch a listing of books
- * 
+ *
  * @responseFile path/to/index/response/file
  */
 public function index()
@@ -425,20 +443,20 @@ the method docs could be added to the class annotations like:
 ```php
 /**
  * Book Resource
- * 
+ *
  * The long description of the book resource
- * 
+ *
  * @group Books
- * 
+ *
  * @indexTitle Books List
  * @indexDescription Fetch a listing of books
  * @indexResponseFile path/to/index/response/file
- * 
+ *
  * @storeTitle Create Book
  * @storeDescription Create a new book
  * @storeBodyParam title string required The title of the book
  * @storeResponseFile path/to/store/response/file
- * 
+ *
  * ...
  */
 class BookController extends CoolSuperController
@@ -450,6 +468,7 @@ class BookController extends CoolSuperController
 **Caveat**
 
 - Multi-line isn't possible
+
 ### Generating based on tags
 
 Sometimes, you may want only a set of endpoints documented, for example, if some endpoints are for internal usage only. Introducing `tags`:
@@ -467,7 +486,6 @@ Route::group(['tags' => ['internal']], function () {
 #### Annotation tags
 
 While `@hideFromAPIDocumentation` hides all so-tagged methods from the documentation, `@tags` allows for a more fine-tuned documentation of methods.
-
 
 ```php
 /**
@@ -506,11 +524,11 @@ If you don't want to create a Postman collection, set the `postman` config optio
 
 If you want to modify the content of your generated documentation, go ahead and edit the generated `index.md` file.
 The default location of this file is: `public/docs/source/index.md`.
- 
+
 After editing the markdown file, use the `apidoc:rebuild` command to rebuild your documentation as a static HTML file.
 
 ```sh
-$ php artisan apidoc:rebuild
+php artisan apidoc:rebuild
 ```
 
 You can optional override the output directory with `--output=path/to/output`. In the case of rebuilding, documentation must already exist at the location.
@@ -518,9 +536,11 @@ You can optional override the output directory with `--output=path/to/output`. I
 If you wish to regenerate your documentation, you can run the `generate` command, you can use the `force` option to force the re-generation of existing/modified API routes.
 
 ## Automatically add markdown to the beginning or end of the documentation
+
  If you wish to automatically add the same content to the docs every time you generate, you can add a `prepend.md` and/or `append.md` file to the source folder, and they will be included above and below the generated documentation.
- 
+
  **File locations:**
+
 - `public/docs/source/prepend.md` - Will be added after the front matter and info text
 - `public/docs/source/append.md` - Will be added at the end of the document.
 
