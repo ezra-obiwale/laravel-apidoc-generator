@@ -4,6 +4,7 @@ namespace Mpociot\ApiDoc\Postman;
 
 use Ramsey\Uuid\Uuid;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Str;
 use Illuminate\Support\Facades\URL;
 
 class CollectionWriter
@@ -73,10 +74,10 @@ class CollectionWriter
     private function url($uri)
     {
         $baseUrl = config('apidoc.url');
-        if (!ends_with($baseUrl, '/')) {
+        if (!Str::endsWith($baseUrl, '/')) {
             $baseUrl .= '/';
         }
-        if (starts_with($uri, '/')) {
+        if (Str::startsWith($uri, '/')) {
             $uri = substr($uri, 1);
         }
         return $baseUrl . $uri;
