@@ -4,7 +4,7 @@ namespace Mpociot\ApiDoc\Tests\Unit;
 
 use Orchestra\Testbench\TestCase;
 use Mpociot\ApiDoc\Tools\Generator;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Arr;
 use Mpociot\ApiDoc\ApiDocGeneratorServiceProvider;
 
 abstract class GeneratorTestCase extends TestCase
@@ -222,7 +222,7 @@ abstract class GeneratorTestCase extends TestCase
     {
         $route = $this->createRoute('POST', '/responseTag', 'withResponseTag');
         $parsed = $this->generator->processRoute($route);
-        $response = array_first($parsed['response']);
+        $response = Arr::first($parsed['response']);
 
         $this->assertTrue(is_array($parsed));
         $this->assertArrayHasKey('showresponse', $parsed);
@@ -243,7 +243,7 @@ abstract class GeneratorTestCase extends TestCase
     {
         $route = $this->createRoute('POST', '/responseTag', 'withResponseTagAndStatusCode');
         $parsed = $this->generator->processRoute($route);
-        $response = array_first($parsed['response']);
+        $response = Arr::first($parsed['response']);
 
         $this->assertTrue(is_array($parsed));
         $this->assertArrayHasKey('showresponse', $parsed);
@@ -292,7 +292,7 @@ abstract class GeneratorTestCase extends TestCase
         config(['apidoc.fractal.serializer' => $serializer]);
         $route = $this->createRoute('GET', '/transformerTag', 'transformerTag');
         $parsed = $this->generator->processRoute($route);
-        $response = array_first($parsed['response']);
+        $response = Arr::first($parsed['response']);
 
         $this->assertTrue(is_array($parsed));
         $this->assertArrayHasKey('showresponse', $parsed);
@@ -324,7 +324,7 @@ abstract class GeneratorTestCase extends TestCase
     {
         $route = $this->createRoute('GET', '/transformerTagWithModel', 'transformerTagWithModel');
         $parsed = $this->generator->processRoute($route);
-        $response = array_first($parsed['response']);
+        $response = Arr::first($parsed['response']);
 
         $this->assertTrue(is_array($parsed));
         $this->assertArrayHasKey('showresponse', $parsed);
@@ -342,7 +342,7 @@ abstract class GeneratorTestCase extends TestCase
     {
         $route = $this->createRoute('GET', '/transformerCollectionTag', 'transformerCollectionTag');
         $parsed = $this->generator->processRoute($route);
-        $response = array_first($parsed['response']);
+        $response = Arr::first($parsed['response']);
 
         $this->assertTrue(is_array($parsed));
         $this->assertArrayHasKey('showresponse', $parsed);
@@ -361,7 +361,7 @@ abstract class GeneratorTestCase extends TestCase
     {
         $route = $this->createRoute('GET', '/transformerCollectionTagWithModel', 'transformerCollectionTagWithModel');
         $parsed = $this->generator->processRoute($route);
-        $response = array_first($parsed['response']);
+        $response = Arr::first($parsed['response']);
 
         $this->assertTrue(is_array($parsed));
         $this->assertArrayHasKey('showresponse', $parsed);
@@ -390,7 +390,7 @@ abstract class GeneratorTestCase extends TestCase
             ],
         ];
         $parsed = $this->generator->processRoute($route, $rules);
-        $response = array_first($parsed['response']);
+        $response = Arr::first($parsed['response']);
 
         $this->assertTrue(is_array($parsed));
         $this->assertArrayHasKey('showresponse', $parsed);
@@ -416,7 +416,7 @@ abstract class GeneratorTestCase extends TestCase
 
         $route = $this->createRoute('GET', '/responseFileTag', 'responseFileTag');
         $parsed = $this->generator->processRoute($route);
-        $response = array_first($parsed['response']);
+        $response = Arr::first($parsed['response']);
 
         $this->assertTrue(is_array($parsed));
         $this->assertArrayHasKey('showresponse', $parsed);
@@ -441,7 +441,7 @@ abstract class GeneratorTestCase extends TestCase
 
         $route = $this->createRoute('GET', '/responseFileTagAndCustomJson', 'responseFileTagAndCustomJson');
         $parsed = $this->generator->processRoute($route);
-        $response = array_first($parsed['response']);
+        $response = Arr::first($parsed['response']);
 
         $this->assertTrue(is_array($parsed));
         $this->assertArrayHasKey('showresponse', $parsed);
@@ -518,7 +518,7 @@ abstract class GeneratorTestCase extends TestCase
             ],
         ];
         $parsed = $this->generator->processRoute($route, $rules);
-        $response = array_first($parsed['response']);
+        $response = Arr::first($parsed['response']);
 
         $this->assertTrue(is_array($parsed));
         $this->assertArrayHasKey('showresponse', $parsed);
